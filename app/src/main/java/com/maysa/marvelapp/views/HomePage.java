@@ -1,23 +1,15 @@
 package com.maysa.marvelapp.views;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -25,27 +17,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import com.github.ybq.android.spinkit.SpinKitView;
 import com.google.gson.Gson;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.maysa.marvelapp.R;
 import com.maysa.marvelapp.adapters.CharWithFilterAdapter;
 import com.maysa.marvelapp.adapters.CharactersAdapter;
-import com.maysa.marvelapp.datamodels.CharactersDataModel;
 import com.maysa.marvelapp.datamodels.Result;
 import com.maysa.marvelapp.listeners.AdapterListener;
 import com.maysa.marvelapp.utilis.InfiniteScrollListener;
 import com.maysa.marvelapp.viewmodels.MainPageViewModel;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
-
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -249,6 +232,7 @@ public class HomePage extends AppCompatActivity implements InfiniteScrollListene
         Log.d("SELECTED_ONE", result.getName());
         Intent  intent = new Intent(HomePage.this,DetailsActivity.class);
         intent.putExtra("SelectedChar", result);
+        intent.putExtra("DES", result.getDescription());
         intent.putExtra("OFFSET", String.valueOf(pageNum));
         intent.putParcelableArrayListExtra("STORIES",(ArrayList<? extends Parcelable>)result.getStories().getItems());
         intent.putParcelableArrayListExtra("SERIES",(ArrayList<? extends Parcelable>)result.getSeries().getItems());

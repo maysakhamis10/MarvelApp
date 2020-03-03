@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -53,8 +52,9 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     ImageView header;
     private KProgressHUD loading ;
     DetailViewModel detailViewModel;
-    private String wikiUrl, comicLinkUrl, detailUrl;
-
+    private String wikiUrl;
+    private String comicLinkUrl;
+    private String detailUrl;
     Result selectedChar;
     private List<Item> stories, events,series,comics ;
 
@@ -80,11 +80,10 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         events = getIntent().getParcelableArrayListExtra("EVENTS");
         series = getIntent().getParcelableArrayListExtra("SERIES");
         comics = getIntent().getParcelableArrayListExtra("COMICS");
+        String descStr = getIntent().getStringExtra("DES");
         List<Url> urlList = getIntent().getParcelableArrayListExtra("URLS");
-
         characterName.setText(selectedChar.getName());
-        characterDescription.setText(selectedChar.getDescription());
-        Log.d("DESC",selectedChar.getDescription());
+        characterDescription.setText(descStr);
         for (Url url : urlList) {
             if (url.getType().equals("detail")) {
                 detailUrl = url.getUrl();
