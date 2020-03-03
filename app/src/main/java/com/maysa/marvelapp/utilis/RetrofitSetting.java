@@ -1,20 +1,14 @@
 package com.maysa.marvelapp.utilis;
 
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
 import okhttp3.Cache;
-import okhttp3.CacheControl;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -39,22 +33,26 @@ public class RetrofitSetting {
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .create();
-        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        File httpCacheDirectory = new File(MyApplication.context.getCacheDir(), "offlineCache");
-        //10 MB
-        Cache cache = new Cache(httpCacheDirectory, 10 * 1024 * 1024);
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .cache(cache)
-                .addInterceptor(httpLoggingInterceptor)
-                .addNetworkInterceptor(provideOfflineCacheInterceptor())
+        OkHttpClient client = new OkHttpClient
+                .Builder()
+                .cache(new Cache(MyApplication.context.getCacheDir(), 10 * 1024 * 1024)) // 10 MB
+                .addInterceptor(chain -> {
+                    Request request = chain.request();
+                    if (isOnline()) {
+                        request = request.newBuilder().header("Cache-Control",
+                                "public, max-age=" + 60).build();
+                    } else {
+                        request = request.newBuilder().header("Cache-Control",
+                                "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7).build();
+                    }
+                    return chain.proceed(request);
+                })
                 .build();
-
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Constants.base_url)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
-                .client(httpClient)
+                .client(client)
                 .build();
 
         this.api = retrofit.create(ApiServices.class);
@@ -65,20 +63,11 @@ public class RetrofitSetting {
         return this.api;
     }
 
-
-
-    private Interceptor provideOfflineCacheInterceptor() {
-        return new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                Response originalResponse = chain.proceed(chain.request());
-                return originalResponse.newBuilder()
-                        .removeHeader("Pragma")
-                        .header("Cache-Control",
-                                String.format("max-age=%d", 60))
-                        .build();
-            }
-        };
+    private static boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) MyApplication.context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
+
 
 }

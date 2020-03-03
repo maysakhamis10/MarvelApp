@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
+import com.kaopiz.kprogresshud.KProgressHUD;
 import com.maysa.marvelapp.R;
 import com.maysa.marvelapp.adapters.ComicsAdapter;
 import com.maysa.marvelapp.adapters.EventsAdapter;
@@ -49,7 +51,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     TextView characterDetail;
     @BindView(R.id.header)
     ImageView header;
-
+    private KProgressHUD loading ;
     DetailViewModel detailViewModel;
     private String wikiUrl, comicLinkUrl, detailUrl;
 
@@ -61,6 +63,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         ButterKnife.bind(this);
+        initLoading();
         init();
         populateComicsList();
         populateEventsList();
@@ -101,11 +104,13 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void populateComicsList() {
+        loading.show();
         List<Item> newComics= new ArrayList<>();
         if (comics!=null) {
             if (comics.size() != 0) {
                     detailViewModel.getPhotosOfEachComic(comics)
                             .observe(this, dataModel -> {
+                                loading.dismiss();
                                 newComics.add(dataModel);
                                 ComicsAdapter comicsAdapter = new ComicsAdapter(newComics,
                                         DetailsActivity.this);
@@ -116,16 +121,24 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
 
             }
+            else {
+                loading.dismiss();
+            }
+        }
+        else {
+            loading.dismiss();
         }
 
     }
 
     private void populateStoriesList() {
+        loading.show();
         List<Item> newStories= new ArrayList<>();
         if (stories!=null) {
             if (stories.size() != 0) {
                     detailViewModel.getPhotosOfEachStory(stories)
                             .observe(this, dataModel -> {
+                                loading.dismiss();
                                 newStories.add(dataModel);
                                 StoriesAdapter storiesAdapter = new StoriesAdapter(newStories,
                                         DetailsActivity.this);
@@ -135,17 +148,24 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                             });
 
                 }
-
+            else {
+                loading.dismiss();
             }
+            }
+        else {
+            loading.dismiss();
+        }
         }
 
 
     private void populateSeriesList() {
+        loading.show();
         List<Item> newSeries = new ArrayList<>();
         if (series!=null){
         if (series.size() != 0) {
                 detailViewModel.getPhotosOfEachSeries(series)
                         .observe(this, dataModel -> {
+                            loading.dismiss();
                             newSeries.add(dataModel);
                             SeriesAdapter seriesAdapter = new SeriesAdapter(newSeries,
                                     DetailsActivity.this);
@@ -154,16 +174,24 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                             listSeries.setAdapter(seriesAdapter);
                         });
         }
+        else {
+            loading.dismiss();
+        }
+        }
+        else {
+            loading.dismiss();
         }
     }
 
     private void populateEventsList() {
 
+        loading.show();
         List<Item> newEvents = new ArrayList<>();
         if (events!=null) {
             if (events.size() != 0) {
                     detailViewModel.getPhotosOfEachEvent(events)
                             .observe(this, dataModel -> {
+                                loading.dismiss();
                                 newEvents.add(dataModel);
                                 EventsAdapter eventsAdapter = new EventsAdapter(newEvents,
                                         DetailsActivity.this);
@@ -173,6 +201,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                             });
 
             }
+            else {
+                loading.dismiss();
+            }
+        }
+        else {
+            loading.dismiss();
         }
     }
 
@@ -198,5 +232,11 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
     }
 
-
+    private void initLoading( ){
+        loading = KProgressHUD.create(DetailsActivity.this)
+                .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+                .setAnimationSpeed(2)
+                .setBackgroundColor(Color.TRANSPARENT)
+                .setDimAmount(0.8f);
+    }
 }

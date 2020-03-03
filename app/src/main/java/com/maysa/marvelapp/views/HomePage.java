@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 import com.github.ybq.android.spinkit.SpinKitView;
 import com.google.gson.Gson;
+import com.kaopiz.kprogresshud.KProgressHUD;
 import com.maysa.marvelapp.R;
 import com.maysa.marvelapp.adapters.CharWithFilterAdapter;
 import com.maysa.marvelapp.adapters.CharactersAdapter;
@@ -72,14 +73,18 @@ public class HomePage extends AppCompatActivity implements InfiniteScrollListene
     private List<Result> allCharList ;
     MainPageViewModel mainPageViewModel;
 
+    private KProgressHUD loading ;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
         ButterKnife.bind(this);
+        initLoading();
         initViews();
         getAllData();
+        searchMethod();
     }
 
     private void initViews(){
@@ -94,16 +99,16 @@ public class HomePage extends AppCompatActivity implements InfiniteScrollListene
         LinearLayoutManager layoutManager2 = new LinearLayoutManager(HomePage.this);
         list_of_characters_filter.addItemDecoration(new DividerItemDecoration(HomePage.this, LinearLayout.VERTICAL));
         list_of_characters_filter.setLayoutManager(layoutManager2);
-
-
         infiniteScrollListener = new InfiniteScrollListener(layoutManager, this);
         infiniteScrollListener.setLoaded();
         list_of_chars.addOnScrollListener(infiniteScrollListener);
 
 
+    }
+
+    private void searchMethod(){
         searchView.setOnClickListener(v -> {
             list_of_chars.setVisibility(View.GONE);
-            //init parent list
             list_of_characters_filter.setVisibility(View.VISIBLE);
         });
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -118,7 +123,10 @@ public class HomePage extends AppCompatActivity implements InfiniteScrollListene
                     list_of_characters_filter.setVisibility(View.VISIBLE);
                     // filter recycler view when query submitted
                     charWithFilterAdapter.getFilter().filter(query);
-                    charWithFilterAdapter.notifyDataSetChanged();
+                    if (charWithFilterAdapter!=null) {
+                        charWithFilterAdapter.getFilter().filter(query);
+                        charWithFilterAdapter.notifyDataSetChanged();
+                    }
                 }
                 return false;
             }
@@ -131,8 +139,10 @@ public class HomePage extends AppCompatActivity implements InfiniteScrollListene
                 } else {
                     list_of_chars.setVisibility(View.GONE);
                     list_of_characters_filter.setVisibility(View.VISIBLE);
-                    charWithFilterAdapter.getFilter().filter(query);
-                    charWithFilterAdapter.notifyDataSetChanged();
+                    if (charWithFilterAdapter!=null) {
+                        charWithFilterAdapter.getFilter().filter(query);
+                        charWithFilterAdapter.notifyDataSetChanged();
+                    }
                 }
                 return false;
             }
@@ -149,11 +159,11 @@ public class HomePage extends AppCompatActivity implements InfiniteScrollListene
                 list_of_characters_filter.setVisibility(View.GONE);
             }
         });
-
     }
 
     private void getAllData() {
 
+        loading.show();
         pageNum = 0 ;
         allCharList.clear();
         mainPageViewModel = ViewModelProviders.of
@@ -161,6 +171,7 @@ public class HomePage extends AppCompatActivity implements InfiniteScrollListene
         mainPageViewModel.getAllCharacters(pageNum).observe(this,
                 jsonObject -> {
 
+            loading.dismiss();
                     if (jsonObject != null) {
                         pageNum = jsonObject.getData().getOffset();
                         total_count = jsonObject.getData().getTotal();
@@ -245,5 +256,13 @@ public class HomePage extends AppCompatActivity implements InfiniteScrollListene
         intent.putParcelableArrayListExtra("URLS",(ArrayList<? extends Parcelable>)result.getUrls());
         intent.putParcelableArrayListExtra("COMICS",(ArrayList<? extends Parcelable>)result.getComics().getItems());
         startActivity(intent);
+    }
+
+    private void initLoading( ){
+        loading = KProgressHUD.create(HomePage.this)
+                .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+                .setAnimationSpeed(2)
+                .setBackgroundColor(Color.TRANSPARENT)
+                .setDimAmount(0.8f);
     }
 }

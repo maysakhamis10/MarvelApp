@@ -8,10 +8,7 @@ import com.maysa.marvelapp.datamodels.Result;
 import com.maysa.marvelapp.utilis.Constants;
 import com.maysa.marvelapp.utilis.MyApplication;
 import com.maysa.marvelapp.utilis.RetrofitSetting;
-
-import java.util.ArrayList;
 import java.util.List;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -83,6 +80,7 @@ public class DetailViewModel extends ViewModel {
                                         comicMutableLiveData.postValue(item);
                                         break;
                                     case "2":
+                                        Log.d("TEST", item.getPhotoUrl());
                                         storiesMutableLiveData.postValue(item);
                                         break;
                                     case "3":

@@ -51,7 +51,6 @@ public class ComicsAdapter extends RecyclerView.Adapter<ComicsAdapter.MyViewHold
         if (character.getPhotoUrl()!=null) {
             if (!character.getPhotoUrl().equals("no_photo")) {
                 String photoStr = character.getPhotoUrl();
-                Log.d("URL_STORY", photoStr);
                 GlideApp.with(context)
                         .load(photoStr)
                         .into(holder.char_pic);
